@@ -63,6 +63,7 @@ class GetWearDataSet(object):
                     if k == 0:
                         label = torch.zeros(all_data[0].shape[1], self.action_num).index_fill(1, torch.tensor(
                             [i * self.shard_num + k]), 1)
+                        # one-hot 赋予label
                         # print(label)
                         b = all_data[i * self.shard_num + k][j]
                     else:
@@ -86,6 +87,7 @@ class GetWearDataSet(object):
 
         train1, test1, train2, test2, train3, test3 = conbine_data.split([20*self.divide_num, 4*self.divide_num, 20*self.divide_num, 4*self.divide_num, 20*self.divide_num, 4*self.divide_num], dim=1)
         train_l1, test_l1, train_l2, test_l2, train_l3, test_l3 = conbine_label.split([20*self.divide_num, 4*self.divide_num, 20*self.divide_num, 4*self.divide_num, 20*self.divide_num, 4*self.divide_num], dim=1)
+        # 由于3种label的数据合并在一起，需要划分训练集和测试集，于是进行了6段split
 
         self.train_data, self.test_data = torch.cat((train1, train2, train3), 1), torch.cat((test1, test2, test3), 1)
         self.train_label, self.test_label = torch.cat((train_l1, train_l2, train_l3), 1), torch.cat((test_l1, test_l2, test_l3), 1)
@@ -111,7 +113,7 @@ class GetWearDataSet(object):
         self.trainset = TensorDataset(conbine_data,conbine_label)
         self.testset = TensorDataset(self.test_data.reshape(-1,25,45),self.test_label.reshape(-1))
         save_dict(client_dict,'dsa15_partition.pkl')
-
+        # 为fedlab的使用生成每个client分配数据的序号
 
 if __name__ == "__main__":
     wearabel_data = GetWearDataSet(3, 20, 3, 5)
